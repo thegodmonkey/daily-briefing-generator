@@ -3,6 +3,7 @@
 // Import individual test modules
 const runNotionTest = require('./tests/test-all-notion');
 const runCalendarTest = require('./tests/test-calendar');
+const runGeminiTest = require('./tests/test-gemini');
 
 /**
  * Executes all defined integration tests sequentially.
@@ -16,6 +17,9 @@ async function runAllTests() {
 
   // Run the Calendar integration test
   await runCalendarTest();
+
+  // Run the Gemini integration test
+  await runGeminiTest();
 
   console.log('All tests finished.');
 }
