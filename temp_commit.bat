@@ -1,1 +1,1 @@
-git commit -m "feat: Complete and test Notion and Calendar data services"
+git commit -m "Initial commit: Set up project structure and services"

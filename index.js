@@ -1,47 +1,107 @@
-const express = require('express');
-const notionService = require('./services/notionService');
+require('dotenv/config');
+const inquirer = require('inquirer');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { getAnnualGoals, getQuarterlyGoals, getWeeklyGoals, getDailyTasks } = require('./services/notionService');
+const { getCalendarEvents } = require('./services/calendarService');
 
-// Initialize the Express application
-const app = express();
-const port = 3000;
-
-// Define a basic route for the root URL
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-// Define a route to fetch and display daily briefing data from Notion
-app.get('/briefing', async (req, res) => {
+async function generateDailyBriefing() {
   try {
-    // Concurrently fetch data from all Notion databases
-    const [annualGoals, quarterlyGoals, weeklyGoals, dailyTasks] = await Promise.all([
-      notionService.getAnnualGoals(),
-      notionService.getQuarterlyGoals(),
-      notionService.getWeeklyGoals(),
-      notionService.getDailyTasks(),
+    // Fetch data concurrently from all services
+    const [annualGoals, quarterlyGoals, weeklyGoals, dailyTasks, calendarEvents] = await Promise.all([
+      getAnnualGoals(),
+      getQuarterlyGoals(),
+      getWeeklyGoals(),
+      getDailyTasks(),
+      getCalendarEvents()
     ]);
 
-    // Log the fetched data to the console for debugging purposes
-    console.log('Annual Goals:', annualGoals);
-    console.log('Quarterly Goals:', quarterlyGoals);
-    console.log('Weekly Goals:', weeklyGoals);
-    console.log('Daily Tasks:', dailyTasks);
+    // Ask the user for additional notes
+    const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'manualAdditions',
+        message: 'What else is on your mind for today? (e.g., unplanned tasks, workouts, or notes)',
+      },
+    ]);
 
-    // Send the fetched data as a JSON response
-    res.json({
-      annualGoals,
-      quarterlyGoals,
-      weeklyGoals,
-      dailyTasks,
-    });
+    // Construct the detailed text prompt
+    let briefingPrompt = "Daily Briefing:\n\n";
+
+    briefingPrompt += "Annual Goals:\n";
+    if (annualGoals.length > 0) {
+      annualGoals.forEach(goal => {
+        const title = goal.properties?.Goal?.title?.[0]?.plain_text || 'Untitled';
+        briefingPrompt += `- ${title}\n`;
+      });
+    } else {
+      briefingPrompt += "No annual goals found.\n";
+    }
+    briefingPrompt += "\n";
+
+    briefingPrompt += "Quarterly Goals:\n";
+    if (quarterlyGoals.length > 0) {
+      quarterlyGoals.forEach(goal => {
+        const title = goal.properties?.Goal?.title?.[0]?.plain_text || 'Untitled';
+        briefingPrompt += `- ${title}\n`;
+      });
+    } else {
+      briefingPrompt += "No quarterly goals found.\n";
+    }
+    briefingPrompt += "\n";
+
+    briefingPrompt += "Weekly Goals:\n";
+    if (weeklyGoals.length > 0) {
+      weeklyGoals.forEach(goal => {
+        const title = goal.properties?.Goal?.title?.[0]?.plain_text || 'Untitled';
+        briefingPrompt += `- ${title}\n`;
+      });
+    } else {
+      briefingPrompt += "No weekly goals found.\n";
+    }
+    briefingPrompt += "\n";
+
+    briefingPrompt += "Daily Tasks:\n";
+    if (dailyTasks.length > 0) {
+      dailyTasks.forEach(task => {
+        const title = task.properties?.Name?.title?.[0]?.plain_text || 'Untitled';
+        briefingPrompt += `- ${title}\n`;
+      });
+    } else {
+      briefingPrompt += "No daily tasks found.\n";
+    }
+    briefingPrompt += "\n";
+
+    briefingPrompt += "Calendar Events Today:\n";
+    if (calendarEvents.length > 0) {
+      calendarEvents.forEach(event => {
+        const startTime = event.start && (event.start.dateTime || event.start.date);
+        const formattedTime = startTime ? new Date(startTime).toLocaleString() : 'N/A';
+        briefingPrompt += `- ${event.summary} (Start: ${formattedTime})\n`;
+      });
+    } else {
+      briefingPrompt += "No calendar events today.\n";
+    }
+    briefingPrompt += "\n";
+
+    briefingPrompt += "Additional Notes:\n";
+    briefingPrompt += `${answers.manualAdditions || 'No additional notes.'}\n`;
+
+    // Initialize Generative AI client
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    // Send the prompt to the Generative AI model
+    const result = await model.generateContent(briefingPrompt);
+    const response = await result.response;
+    const text = response.text();
+
+    // Log the AI's response to the console
+    console.log("\n--- AI Generated Daily Briefing ---\n");
+    console.log(text);
+
   } catch (error) {
-    // Handle any errors during data fetching and send a 500 status code
-    console.error(error);
-    res.status(500).send("Error fetching data from Notion");
+    console.error('An error occurred during briefing generation:', error);
   }
-});
+}
 
-// Start the Express server
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});
+generateDailyBriefing();
