@@ -1,6 +1,6 @@
 # Project: Daily Briefing Generator
 
-A command-line tool built with Node.js to fetch data from Notion and Google Calendar and generate a daily briefing.
+A command-line tool built with Node.js to fetch data from Notion and Google Calendar and generate a daily briefing using the Google Gemini API.
 
 ## Core Development Principles
 * **Intentional Code:** Confirm the goal before generating or modifying code. Avoid adding code that wasn't explicitly requested.
@@ -9,10 +9,10 @@ A command-line tool built with Node.js to fetch data from Notion and Google Cale
 
 ## Key Files & Directories
 
-* `index.js`: The main application entry point. Will be used to orchestrate calls to the services and the Gemini API.
-* `package.json`: Manages project dependencies, including `express`, `@notionhq/client`, `googleapis`, and `dotenv`.
+* `index.js`: The main application entry point. Orchestrates calls to Notion, Google Calendar, and the Gemini API to generate the daily briefing.
+* `package.json`: Manages project dependencies, including `express`, `@notionhq/client`, `googleapis`, `dotenv`, and `@google/generative-ai`.
 * `/services`: Contains modules for connecting to third-party APIs.
-* `/tests`: Contains scripts for testing individual services (`test-notion.js`, `test-calendar.js`, etc.).
+* `/tests`: Contains scripts for testing individual services (`test-notion.js`, `test-calendar.js`, `test-gemini.js`, etc.).
 
 ## Core Services (`/services`)
 
@@ -33,7 +33,12 @@ A command-line tool built with Node.js to fetch data from Notion and Google Cale
 * **Functions:**
     * `getCalendarEvents()` (Fetches events for today)
 
+### Gemini API Integration
+* Uses the `@google/generative-ai` library.
+* Authenticates using an API key from `.env` (`GEMINI_API_KEY`).
+* Integrated directly into `index.js` to send the combined briefing prompt to the `gemini-2.5-flash` model.
+
 ## Configuration
 
-* `.env`: Stores all secret keys and IDs for Notion and Google Calendar. Loaded using `dotenv`.
+* `.env`: Stores all secret keys and IDs for Notion, Google Calendar, and the Gemini API. Loaded using `dotenv`.
 * `credentials.json`: The OAuth 2.0 client configuration file downloaded from Google Cloud.
