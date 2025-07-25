@@ -1,9 +1,13 @@
 // 1. Define all imports
 // Load environment variables from a .env file.
+// 1. Define all imports
+// Load environment variables from a .env file.
 require('dotenv/config');
 
 // Import the Google AI client library.
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// Import data-fetching functions from local service modules.
 
 // Import data-fetching functions from local service modules.
 const { getAnnualGoals, getQuarterlyGoals, getWeeklyGoals, getDailyTasks } = require('./services/notionService');
