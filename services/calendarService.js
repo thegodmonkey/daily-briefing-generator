@@ -1,115 +1,77 @@
+// This service is responsible for fetching events from the Google Calendar API.
+
+// Load environment variables from a .env file.
 require('dotenv').config();
-const fs = require('fs').promises;
-const path = require('path');
-const process = require('process');
-const { google } = require('googleapis');
-const readline = require('readline');
-
-// Define the scope for Google Calendar API (read-only)
-const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
-
-// Define the full, correct paths for the token and credentials files
-const TOKEN_PATH = path.join(process.cwd(), 'token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
+// Import necessary Node.js and Google library modules.
+const fs = require('fs').promises; // For asynchronous file system operations.
+const { google } = require('googleapis'); // The main Google APIs client library.
 
 /**
- * Loads a saved token from token.json if it exists.
- * @returns {Promise<object|null>}
- */
-async function loadTokenIfExists() {
-  try {
-    const content = await fs.readFile(TOKEN_PATH);
-    return JSON.parse(content);
-  } catch (err) {
-    // If the file doesn't exist or is invalid, return null.
-    return null;
-  }
-}
-
-/**
- * Saves a new token to token.json.
- * @param {object} token The token to save.
- * @returns {Promise<void>}
- */
-async function saveToken(token) {
-  await fs.writeFile(TOKEN_PATH, JSON.stringify(token));
-  console.log('Token saved to', TOKEN_PATH);
-}
-
-/**
- * The single main authorization function.
- * It first tries to load a token. If that fails, it initiates the
- * one-time browser authorization flow and saves the new token.
- * @returns {Promise<import('google-auth-library').OAuth2Client>}
+ * Authorizes the application to make Google Calendar API calls.
+ * This is a non-interactive flow that relies on `credentials.json` and a pre-existing `token.json`.
+ * The `token.json` file must be generated first by running the `authorize.js` script.
+ * @returns {Promise<OAuth2Client>} An authorized OAuth2 client instance.
  */
 async function authorize() {
-  // Try to load a saved token
-  const savedToken = await loadTokenIfExists();
-  const credentials = JSON.parse(await fs.readFile(CREDENTIALS_PATH));
+  // Read the application's credentials from the credentials file.
+  const credentialsContent = await fs.readFile('credentials.json');
+  const credentials = JSON.parse(credentialsContent);
   const { client_secret, client_id, redirect_uris } = credentials.installed || credentials.web;
+
+  // Create a new OAuth2 client with the loaded credentials.
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 
-  // If a token was loaded, set it and return the authorized client
-  if (savedToken) {
-    oAuth2Client.setCredentials(savedToken);
-    return oAuth2Client;
-  }
+  // Read the user's previously saved token.
+  const tokenContent = await fs.readFile('token.json');
+  const token = JSON.parse(tokenContent);
 
-  // If no token exists, start the browser authorization flow
-  return new Promise((resolve, reject) => {
-    const authUrl = oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES });
-    console.log('Authorize this app by visiting this URL:', authUrl);
-
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    rl.question('Enter the code from that page here: ', async (code) => {
-      rl.close();
-      try {
-        const { tokens } = await oAuth2Client.getToken(code);
-        oAuth2Client.setCredentials(tokens);
-        await saveToken(tokens);
-        console.log('Authorization successful.');
-        resolve(oAuth2Client);
-      } catch (err) {
-        console.error('Error while trying to retrieve access token', err);
-        reject(err);
-      }
-    });
-  });
+  // Set the credentials for the OAuth2 client, including the access and refresh tokens.
+  oAuth2Client.setCredentials(token);
+  return oAuth2Client;
 }
 
 /**
- * Fetches calendar events for the current day using the main authorize function.
- * @returns {Promise<Array>}
+ * Fetches all calendar events scheduled for the current day.
+ * @returns {Promise<Array>} A promise that resolves to an array of event objects.
  */
 async function getCalendarEvents() {
   try {
+    // Get an authorized client before making any API calls.
     const auth = await authorize();
+    // Create a new Google Calendar API client.
     const calendar = google.calendar({ version: 'v3', auth });
 
+    // Calculate the time range for today (from midnight to midnight).
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
+    // Get the specific Calendar ID from environment variables.
     const calendarId = process.env.GOOGLE_CALENDAR_ID;
     if (!calendarId) {
       throw new Error('GOOGLE_CALENDAR_ID environment variable is not set.');
     }
 
+    // Call the Google Calendar API to list events within the specified time range.
     const res = await calendar.events.list({
       calendarId: calendarId,
       timeMin: today.toISOString(),
       timeMax: tomorrow.toISOString(),
-      singleEvents: true,
-      orderBy: 'startTime',
+      singleEvents: true, // Expands recurring events into individual instances.
+      orderBy: 'startTime', // Sorts events by their start time.
     });
 
+    // Extract the list of events from the API response.
     const events = res.data.items;
+    // Return the events, or an empty array if there are none.
     return events || [];
   } catch (error) {
+    // Log any errors that occur during the process and re-throw the error.
     console.error('Error fetching calendar events:', error.message);
     throw error;
   }
 }
 
+// Export the main function so it can be used by other parts of the application (e.g., index.js).
 module.exports = { getCalendarEvents };

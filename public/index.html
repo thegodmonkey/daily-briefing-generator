@@ -1,11 +1,47 @@
+<!--
+  This HTML file sets up the structure for a chat-based interface for the Daily Briefing Agent.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Briefing Generator</title>
+    <title>Daily Briefing Agent</title>
+
+    <!-- Include the 'marked' library from a CDN. This library is used to parse Markdown text and convert it into HTML. -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Basic CSS for styling the chat interface. -->
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 1rem; }
+        /* The main container for chat messages. It has a fixed height and a scrollbar. */
+        #chat-container { border: 1px solid #ccc; padding: 1rem; height: 70vh; overflow-y: scroll; margin-bottom: 1rem; }
+        /* Styling for individual messages. */
+        .message { margin-bottom: 1rem; padding: 0.5rem; border-radius: 5px; }
+        /* Specific styling for messages coming from the AI. */
+        .ai-message { background-color: #f1f1f1; }
+        /* Use flexbox for the input form to align the textarea and button. */
+        form { display: flex; }
+        textarea { flex-grow: 1; padding: 0.5rem; }
+        button { padding: 0.5rem 1rem; margin-left: 0.5rem; }
+    </style>
 </head>
 <body>
-    <h1>Daily Briefing Generator</h1>
+    <h1>Daily Briefing Agent</h1>
+
+    <!-- This div will contain all the chat messages. -->
+    <div id="chat-container">
+        <!-- An initial message to show while the first briefing is being loaded. -->
+        <p id="loading-indicator">Generating initial briefing...</p>
+    </div>
+
+    <!-- The form for user input. -->
+    <form id="chat-form">
+        <textarea id="message-input" placeholder="Type your message..." rows="3"></textarea>
+        <button type="submit">Send</button>
+    </form>
+
+    <!-- Link to the client-side JavaScript that powers the chat functionality. -->
+    <script src="script.js"></script>
 </body>
 </html>

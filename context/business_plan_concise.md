@@ -1,36 +1,26 @@
 ### 1. Vision, Mission & Core Principles
 
-- To be a trusted product leader for, primarily, B2B and scaling
-  companies, helping them elevate their product game with user empathy
-  and data-science expertise, while ensuring the time, freedom, and
-  resources to live life fully and build a solid future for yourself and
-  your family, wherever you choose to be.
+- To be a trusted product leader for, primarily, B2B and scaling companies, helping them elevate their product game with user empathy and data-science expertise, while ensuring I have the time, freedom, and resources to live life fully and build a solid future for myself and my family, wherever I choose to be.
 
 ### 2. Core tenets 
 
-- Prioritizing time over endless work.
+- To have time in life - not just be working endlessly. I am always happier when I can enjoy time without pressures of work.
 
-- Avoiding workplace stress is a core tenet.
+- To avoid workplace politics and be able to have a stable work environment. I want to minimise work stress in my life.
 
-- Making a direct impact on people or the planet is a core tenet.
+- To find time in my life to make a direct impact on people or planet - I learned through volunteering that knowing I am making a direct impact is motivating and rewarding
 
-- Progressing in Product Management during the AI revolution is a core
-  tenet.
+- To progress as a Product Manager during the AI revolution and be well regarded in my job. I want to continue to enjoy the challenges of Product Management, to bring real user empathy and closeness to more companies (see tenet #3!), and to make the most of my data science abilities.
 
-- Leveraging data science abilities is a core tenet.
+- To be able to live in any country I want, beginning with Brazil, while achieving these goals.
 
-- Achieving geographical freedom (e.g., living in Brazil) is a core
-  tenet.
+- To work for myself, being able to set out how much I work and how much for, where this is possible.
 
-- Working independently, controlling hours and rates, is a core tenet.
+-= To earn enough to have a happy life and not chase money solely for the purpose of being rich. Money alone will not make me happy.
 
-- Earning enough for a happy life, not solely for wealth, is a core
-  tenet.
+- To create wealth for my family. Wealth is both money, assets and being time rich while I have my best years ahead.
 
-- Creating wealth for family (money, assets, time richness) is a core
-  tenet.
-
-- Diversifying income over time is a core tenet.
+- To diversify my income over time (this is not necessarily important for 2025) and not rely totally on one client or pay-packet.
 
 ### 2. Value Proposition & Service Offerings
 
